@@ -121,7 +121,7 @@ class TraceNode implements TraceContext {
     /** @internal collect mermaid lines */
     _mermaid(lines: string[], parentId: string, opts: MermaidOptions, order?: number): void {
         const dataStr = this.data
-            ? `\\n${Object.entries(this.data).map(([k, v]) => `${k}=${v}`).join(', ')}`
+            ? `<br/>${Object.entries(this.data).map(([k, v]) => `${k}=${v}`).join(', ')}`
             : '';
         const nodeLabel = `${this.label}${dataStr}`;
         const safe = nodeLabel.replace(/"/g, '#quot;');
@@ -145,7 +145,7 @@ class TraceNode implements TraceContext {
         };
         const lines: string[] = [`graph ${opts.direction}`];
         const dataStr = this.data
-            ? `\\n${Object.entries(this.data).map(([k, v]) => `${k}=${v}`).join(', ')}`
+            ? `<br/>${Object.entries(this.data).map(([k, v]) => `${k}=${v}`).join(', ')}`
             : '';
         const nodeId = `n${this.id}`;
         const safe = `${this.label}${dataStr}`.replace(/"/g, '#quot;');
@@ -228,7 +228,7 @@ export class Trace implements TraceContext {
 
         const rootId = 'root';
         const dataStr = this.data
-            ? `\\n${Object.entries(this.data).map(([k, v]) => `${k}=${v}`).join(', ')}`
+            ? `<br/>${Object.entries(this.data).map(([k, v]) => `${k}=${v}`).join(', ')}`
             : '';
         const safe = `${this.id}${dataStr}`.replace(/"/g, '#quot;');
         lines.push(`    ${rootId}["${safe}"]`);
