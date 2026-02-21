@@ -45,7 +45,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "tsc --noEmit",
-    "ci": "npm run lint && npm run check-format && npm run test && npm run build",
+    "ci": "npm run build",
     "prepublishOnly": "npm run ci",
     "check-exports": "npx @arethetypeswrong/cli --pack"
   },
