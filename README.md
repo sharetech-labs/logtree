@@ -83,13 +83,13 @@ Output:
 
 ```mermaid
 graph LR
-    root["order-123\ncustomer=C-2041"]
-    n1["pricing\nsubtotal=284.97"]
-    root -->|1| n1
-    n2["apply-discount\ncode=SAVE20"]
+    root["order-123"]
+    n1["pricing"]
+    n2["apply-discount"]
+    n3["payment"]
+    root --> n1
+    root --> n3
     n1 --> n2
-    n3["payment\namount=227.98"]
-    root -->|2| n3
 ```
 
 Use this directly in GitHub Markdown docs, issues, and PR descriptions.
