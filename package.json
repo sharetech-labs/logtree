@@ -1,6 +1,6 @@
 {
   "name": "@sharetech-labs/logtree",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Structured decision tracing with nested log trees. One method, automatic scoping, JSON/ASCII/Mermaid output.",
   "author": "Sharetech Labs",
   "license": "MIT",

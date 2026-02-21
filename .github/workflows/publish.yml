@@ -7,14 +7,10 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    # Skip if the commit was made by this workflow (version bump)
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -22,19 +18,26 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
 
-      - run: npm ci
-      - run: npm run ci
-
-      - name: Bump patch version
+      - name: Check if version changed
+        id: version
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          npm version patch -m "v%s [skip ci]"
+          LOCAL=$(node -p "require('./package.json').version")
+          REMOTE=$(npm view @sharetech-labs/logtree version 2>/dev/null || echo "0.0.0")
+          if [ "$LOCAL" != "$REMOTE" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Publishing $LOCAL (remote is $REMOTE)"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Version $LOCAL already published, skipping"
+          fi
 
-      - name: Push version bump
-        run: git push --follow-tags
+      - if: steps.version.outputs.changed == 'true'
+        run: npm ci
 
-      - name: Publish to npm
+      - if: steps.version.outputs.changed == 'true'
+        run: npm run ci
+
+      - if: steps.version.outputs.changed == 'true'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
