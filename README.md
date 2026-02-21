@@ -75,7 +75,7 @@ Good for analytics/event pipelines where each entry needs an `id`, `timestamp`, 
 ### 3. Mermaid Diagrams (`mermaid`)
 
 ```ts
-const diagram = trace.mermaid({ direction: 'LR', order: true });
+const diagram = trace.mermaid();
 console.log(diagram);
 ```
 
@@ -97,7 +97,7 @@ Use this directly in GitHub Markdown docs, issues, and PR descriptions.
 ## API At A Glance
 
 ```ts
-new Trace(id: string, data?: Record<string, unknown>)
+new Trace(id: string, data?: Record<string, unknown>, options?: { consoleLogging?: boolean })
 
 trace.log(label: string, data?: Record<string, unknown>): TraceContext
 trace.toJSON(): TraceJSON
@@ -105,8 +105,7 @@ trace.flat(): FlatEntry[]
 trace.summary(): string
 trace.mermaid(options?: { direction?: 'TD' | 'LR' | 'BT' | 'RL'; order?: boolean }): string
 
-trace.enableConsoleLogging(): Trace
-trace.disableConsoleLogging(): Trace
+trace.setConsoleLogging({ enabled: boolean }): Trace
 
 // The returned context from log() supports:
 context.log(label: string, data?: Record<string, unknown>): TraceContext

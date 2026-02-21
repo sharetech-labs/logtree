@@ -170,19 +170,17 @@ export class Trace implements TraceContext {
     private _consoleLog = { enabled: false };
     private _counter = { next: 1 };
 
-    constructor(id: string, data?: Record<string, unknown>) {
+    constructor(id: string, data?: Record<string, unknown>, options?: { consoleLogging?: boolean }) {
         this.id = id;
         this.data = data;
         this.timestamp = new Date().toISOString();
+        if (options?.consoleLogging) {
+            this._consoleLog.enabled = true;
+        }
     }
 
-    enableConsoleLogging(): this {
-        this._consoleLog.enabled = true;
-        return this;
-    }
-
-    disableConsoleLogging(): this {
-        this._consoleLog.enabled = false;
+    setConsoleLogging(options: { enabled: boolean }): this {
+        this._consoleLog.enabled = options.enabled;
         return this;
     }
 
