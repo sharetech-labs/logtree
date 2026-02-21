@@ -14,17 +14,6 @@ Capture execution paths once, then export them as JSON, flat events, ASCII trees
 
 </div>
 
-## Why logtree
-
-- Minimal API: one `log()` method at every level.
-- Automatic nesting: each returned context keeps trace depth for you.
-- Multiple outputs from the same trace:
-  - `toJSON()` for APIs and storage.
-  - `flat()` for event pipelines.
-  - `summary()` for terminal debugging.
-  - `mermaid()` for diagrams in docs and PRs.
-- Works in both ESM and CommonJS builds.
-
 ## Install
 
 ```bash
@@ -36,46 +25,46 @@ npm install @sharetech-labs/logtree
 ```ts
 import { Trace } from '@sharetech-labs/logtree';
 
-const trace = new Trace('order-123', { customer: 'C-2041' });
+const $order = new Trace('received-new-order', { orderId: 'ORD-4821' });
 
-const pricing = trace.log('pricing', { subtotal: 284.97 });
-pricing.log('apply-discount', { code: 'SAVE20' });
-trace.log('payment', { amount: 227.98 });
+const $pricing = $order.log('calculate-pricing', { subtotal: 284.97 });
+$pricing.log('apply-discount', { code: 'SAVE20', saved: 56.99 });
+$order.log('charge-payment', { amount: 227.98, method: 'card' });
 
-console.log(trace.summary());
+console.log($order.summary());
 ```
 
 Output:
 
 ```text
-order-123
-├─ pricing (subtotal=284.97)
-│  └─ apply-discount (code=SAVE20)
-└─ payment (amount=227.98)
+received-new-order
+├─ calculate-pricing (subtotal=284.97)
+│  └─ apply-discount (code=SAVE20, saved=56.99)
+└─ charge-payment (amount=227.98, method=card)
 ```
 
 ## npm + GitHub Friendly Outputs
 
-### 1. Nested JSON (`toJSON`)
+### Nested JSON (`toJSON`)
 
 ```ts
-const json = trace.toJSON();
+const json = $order.toJSON();
 ```
 
 Good for API responses, snapshots, or writing trace artifacts in CI.
 
-### 2. Flat Events (`flat`)
+### Flat Events (`flat`)
 
 ```ts
-const events = trace.flat();
+const events = $order.flat();
 ```
 
 Good for analytics/event pipelines where each entry needs an `id`, `timestamp`, and `_depth`.
 
-### 3. Mermaid Diagrams (`mermaid`)
+### Mermaid Diagrams (`mermaid`)
 
 ```ts
-const diagram = trace.mermaid();
+const diagram = $order.mermaid();
 console.log(diagram);
 ```
 
@@ -83,10 +72,10 @@ Output:
 
 ```mermaid
 graph LR
-    root["order-123"]
-    n1["pricing"]
+    root["received-new-order"]
+    n1["calculate-pricing"]
     n2["apply-discount"]
-    n3["payment"]
+    n3["charge-payment"]
     root --> n1
     root --> n3
     n1 --> n2
@@ -99,16 +88,16 @@ Use this directly in GitHub Markdown docs, issues, and PR descriptions.
 ```ts
 new Trace(id: string, data?: Record<string, unknown>, options?: { consoleLogging?: boolean })
 
-trace.log(label: string, data?: Record<string, unknown>): TraceContext
-trace.toJSON(): TraceJSON
-trace.flat(): FlatEntry[]
-trace.summary(): string
-trace.mermaid(options?: { direction?: 'TD' | 'LR' | 'BT' | 'RL'; order?: boolean }): string
+$order.log(label: string, data?: Record<string, unknown>): TraceContext
+$order.toJSON(): TraceJSON
+$order.flat(): FlatEntry[]
+$order.summary(): string
+$order.mermaid(options?: { direction?: 'TD' | 'LR' | 'BT' | 'RL'; order?: boolean }): string
 
-trace.setConsoleLogging({ enabled: boolean }): Trace
+$order.setConsoleLogging({ enabled: boolean }): Trace
 
 // The returned context from log() supports:
-context.log(label: string, data?: Record<string, unknown>): TraceContext
+$step.log(label: string, data?: Record<string, unknown>): TraceContext
 ```
 
 ## Module Usage
