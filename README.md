@@ -73,12 +73,17 @@ Output:
 ```mermaid
 graph LR
     root["received-new-order"]
-    n1["calculate-pricing"]
-    n2["apply-discount"]
-    n3["charge-payment"]
-    root --> n1
-    root --> n3
-    n1 --> n2
+    subgraph sg_root["steps"]
+        direction TB
+        n1["calculate-pricing"]
+        n3["charge-payment"]
+    end
+    root --> sg_root
+    subgraph sg_n1["steps"]
+        direction TB
+        n2["apply-discount"]
+    end
+    n1 --> sg_n1
 ```
 
 Use this directly in GitHub Markdown docs, issues, and PR descriptions.

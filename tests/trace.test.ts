@@ -128,6 +128,8 @@ describe('Trace', () => {
       const out = trace.mermaid();
       expect(out).toContain('graph TD');
       expect(out).toContain('root["order-123"]');
+      expect(out).toContain('subgraph sg_root["steps"]');
+      expect(out).toContain('root --> sg_root');
       expect(out).toContain('step-a');
       expect(out).toContain('step-b');
     });
@@ -143,8 +145,8 @@ describe('Trace', () => {
       trace.log('a');
       trace.log('b');
       const out = trace.mermaid({ order: true });
-      expect(out).toContain('-->|1|');
-      expect(out).toContain('-->|2|');
+      expect(out).toContain('1. a');
+      expect(out).toContain('2. b');
     });
   });
 });

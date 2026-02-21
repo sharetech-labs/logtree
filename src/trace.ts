@@ -25,7 +25,7 @@ export interface TraceJSON {
 }
 
 export interface MermaidOptions {
-    /** Show execution order on edges with multiple children. Default: false */
+    /** Show execution order prefixes in child lists with multiple children. Default: false */
     order?: boolean;
     /** Graph direction. Default: "TD" */
     direction?: 'TD' | 'LR' | 'BT' | 'RL';
@@ -118,22 +118,43 @@ class TraceNode implements TraceContext {
         }
     }
 
-    /** @internal collect mermaid lines */
-    _mermaid(lines: string[], parentId: string, opts: MermaidOptions, order?: number): void {
+    /** @internal build mermaid node line */
+    _mermaidNode(order?: number): string {
+        const prefix = order !== undefined ? `${order}. ` : '';
         const dataStr = this.data
             ? `<br/>${Object.entries(this.data).map(([k, v]) => `${k}=${v}`).join(', ')}`
             : '';
-        const nodeLabel = `${this.label}${dataStr}`;
+        const nodeLabel = `${prefix}${this.label}${dataStr}`;
         const safe = nodeLabel.replace(/"/g, '#quot;');
+        return `${this._mermaidNodeId()}["${safe}"]`;
+    }
 
-        const nodeId = `n${this.id}`;
-        lines.push(`    ${nodeId}["${safe}"]`);
-        const edge = opts.order && order !== undefined ? ` -->|${order}| ` : ' --> ';
-        lines.push(`    ${parentId}${edge}${nodeId}`);
+    /** @internal mermaid node id */
+    _mermaidNodeId(): string {
+        return `n${this.id}`;
+    }
+
+    /** @internal collect mermaid children as a grouped list */
+    _mermaidChildren(lines: string[], opts: MermaidOptions): void {
+        if (this.children.length === 0) {
+            return;
+        }
+
+        const parentId = this._mermaidNodeId();
+        const containerId = `sg_${parentId}`;
+        lines.push(`    subgraph ${containerId}["steps"]`);
+        lines.push(`        direction TB`);
 
         const showOrder = opts.order && this.children.length > 1;
         for (let i = 0; i < this.children.length; i++) {
-            this.children[i]!._mermaid(lines, nodeId, opts, showOrder ? i + 1 : undefined);
+            lines.push(`        ${this.children[i]!._mermaidNode(showOrder ? i + 1 : undefined)}`);
+        }
+
+        lines.push(`    end`);
+        lines.push(`    ${parentId} --> ${containerId}`);
+
+        for (let i = 0; i < this.children.length; i++) {
+            this.children[i]!._mermaidChildren(lines, opts);
         }
     }
 
@@ -144,18 +165,8 @@ class TraceNode implements TraceContext {
             ...options,
         };
         const lines: string[] = [`graph ${opts.direction}`];
-        const dataStr = this.data
-            ? `<br/>${Object.entries(this.data).map(([k, v]) => `${k}=${v}`).join(', ')}`
-            : '';
-        const nodeId = `n${this.id}`;
-        const safe = `${this.label}${dataStr}`.replace(/"/g, '#quot;');
-        lines.push(`    ${nodeId}["${safe}"]`);
-
-        const showOrder = opts.order && this.children.length > 1;
-        for (let i = 0; i < this.children.length; i++) {
-            this.children[i]!._mermaid(lines, nodeId, opts, showOrder ? i + 1 : undefined);
-        }
-
+        lines.push(`    ${this._mermaidNode()}`);
+        this._mermaidChildren(lines, opts);
         return lines.join('\n');
     }
 }
@@ -233,9 +244,24 @@ export class Trace implements TraceContext {
         const safe = `${this.id}${dataStr}`.replace(/"/g, '#quot;');
         lines.push(`    ${rootId}["${safe}"]`);
 
+        if (this.children.length === 0) {
+            return lines.join('\n');
+        }
+
+        const containerId = `sg_${rootId}`;
+        lines.push(`    subgraph ${containerId}["steps"]`);
+        lines.push(`        direction TB`);
+
         const showOrder = opts.order && this.children.length > 1;
         for (let i = 0; i < this.children.length; i++) {
-            this.children[i]!._mermaid(lines, rootId, opts, showOrder ? i + 1 : undefined);
+            lines.push(`        ${this.children[i]!._mermaidNode(showOrder ? i + 1 : undefined)}`);
+        }
+
+        lines.push(`    end`);
+        lines.push(`    ${rootId} --> ${containerId}`);
+
+        for (let i = 0; i < this.children.length; i++) {
+            this.children[i]!._mermaidChildren(lines, opts);
         }
 
         return lines.join('\n');
